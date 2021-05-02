@@ -1,7 +1,15 @@
 import { useEffect, useState } from "react";
 import pinImage from "./pin.png";
+import "./naverMap.css";
 
 const { naver } = window;
+
+const otherLatLngs = [
+  { lat: 37.6859, lng: 126.597865 },
+  { lat: 37.68528, lng: 126.597227 },
+  { lat: 37.685535, lng: 126.599528 },
+  { lat: 37.684234, lng: 126.599292 },
+];
 
 function App() {
   const [myLocation, setMyLocation] = useState<
@@ -43,13 +51,13 @@ function App() {
       });
 
       // 주변 마커 나타내기
-      const otherLatLngs = [
-        { lat: 37.6859, lng: 126.597865 },
-        { lat: 37.68528, lng: 126.597227 },
-        { lat: 37.685535, lng: 126.599528 },
-        { lat: 37.684234, lng: 126.599292 },
-      ];
-      for (let i = 0; i < otherLatLngs.length; i++) {
+      const markers: naver.maps.Marker[] = [];
+      const infowindows: naver.maps.InfoWindow[] = [];
+      const contentTags =
+        '<div class="naver-container"><p class="ptag">여깁니다</p><span class="spantag">맞아요</span></div>';
+
+      // show other markers
+      for (let i = 0; i < otherLatLngs.length; i += 1) {
         const otherMarkers = new naver.maps.Marker({
           position: new naver.maps.LatLng(
             otherLatLngs[i].lat,
@@ -57,6 +65,65 @@ function App() {
           ),
           map,
         });
+
+        const infowindow = new naver.maps.InfoWindow({
+          content: contentTags,
+          borderWidth: 1,
+          anchorSize: new naver.maps.Size(10, 10),
+          pixelOffset: new naver.maps.Point(10, -10),
+        });
+
+        markers.push(otherMarkers);
+        infowindows.push(infowindow);
+      }
+
+      naver.maps.Event.addListener(map, "idle", () => {
+        updateMarkers(map, markers);
+      });
+
+      const updateMarkers = (
+        isMap: naver.maps.Map,
+        isMarkers: naver.maps.Marker[]
+      ) => {
+        const mapBounds: any = isMap.getBounds();
+        let marker;
+        let position;
+
+        for (let i = 0; i < isMarkers.length; i += 1) {
+          marker = isMarkers[i];
+          position = marker.getPosition();
+
+          if (mapBounds.hasLatLng(position)) {
+            showMarker(isMap, marker);
+          } else {
+            hideMarker(marker);
+          }
+        }
+      };
+
+      const showMarker = (isMap: naver.maps.Map, marker: naver.maps.Marker) => {
+        marker.setMap(isMap);
+      };
+
+      const hideMarker = (marker: naver.maps.Marker) => {
+        marker.setMap(null);
+      };
+
+      const getClickHandler = (seq: number) => {
+        return () => {
+          const marker = markers[seq];
+          const infoWindow = infowindows[seq];
+
+          if (infoWindow.getMap()) {
+            infoWindow.close();
+          } else {
+            infoWindow.open(map, marker);
+          }
+        };
+      };
+
+      for (let i = 0; i < markers.length; i += 1) {
+        naver.maps.Event.addListener(markers[i], "click", getClickHandler(i));
       }
     }
   }, [myLocation]);
