@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import pinImage from "./pin.png";
 
 const { naver } = window;
 
@@ -28,6 +29,17 @@ function App() {
       const map = new naver.maps.Map("map", {
         center: new naver.maps.LatLng(currentPosition[0], currentPosition[1]),
         zoomControl: true,
+      });
+
+      const currentMarker = new naver.maps.Marker({
+        position: new naver.maps.LatLng(currentPosition[0], currentPosition[1]),
+        map,
+        icon: {
+          url: pinImage,
+          size: new naver.maps.Size(50, 52),
+          origin: new naver.maps.Point(0, 0),
+          anchor: new naver.maps.Point(25, 26),
+        },
       });
     }
   }, [myLocation]);
