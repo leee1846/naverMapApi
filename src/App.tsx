@@ -1,22 +1,38 @@
-import { useRef, useEffect } from "react";
-declare global {
-  interface Window {
-    naver: any;
-  }
-}
+import { useEffect, useState } from "react";
 
 const { naver } = window;
 
 function App() {
-  const mapRef = useRef(null);
+  const [myLocation, setMyLocation] = useState<
+    { latitude: number; longitude: number } | string
+  >("");
 
-  const mapOptions = {
-    center: new naver.maps.LatLng(37.3595704, 127.105399),
-    zoom: 10,
-  };
+  // get current position
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition((position) => {
+        setMyLocation({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        });
+      });
+    } else {
+      window.alert("현재위치를 알수 없습니다.");
+    }
+  }, []);
 
-  const map = new naver.maps.Map(mapRef.current, mapOptions);
-  return <div ref={mapRef} style={{ width: "100%", height: "500px" }} />;
+  useEffect(() => {
+    if (typeof myLocation !== "string") {
+      const currentPosition = [myLocation.latitude, myLocation.longitude];
+
+      const map = new naver.maps.Map("map", {
+        center: new naver.maps.LatLng(currentPosition[0], currentPosition[1]),
+        zoomControl: true,
+      });
+    }
+  }, [myLocation]);
+
+  return <div id='map' style={{ width: "100%", height: "500px" }} />;
 }
 
 export default App;
