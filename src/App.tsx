@@ -41,6 +41,23 @@ function App() {
           anchor: new naver.maps.Point(25, 26),
         },
       });
+
+      // 주변 마커 나타내기
+      const otherLatLngs = [
+        { lat: 37.6859, lng: 126.597865 },
+        { lat: 37.68528, lng: 126.597227 },
+        { lat: 37.685535, lng: 126.599528 },
+        { lat: 37.684234, lng: 126.599292 },
+      ];
+      for (let i = 0; i < otherLatLngs.length; i++) {
+        const otherMarkers = new naver.maps.Marker({
+          position: new naver.maps.LatLng(
+            otherLatLngs[i].lat,
+            otherLatLngs[i].lng
+          ),
+          map,
+        });
+      }
     }
   }, [myLocation]);
 
